@@ -31,12 +31,20 @@ async function createMain(element){
     const images = await getArtWorks();
     const container = document.createElement(element);
     for( image of images) {
+        let div = document.createElement("div");
+        let button = document.createElement("button");
+        button.innerText = favExists() ? "remove" : "add";
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
-        container.append(imageElement);
+        div.append(button, imageElement);
+        container.append(div);
     };
 
     return container;
+
+    function favExists(){
+        return false;
+    }
 }
 
 async function compareFavourites(users, userFavs){
@@ -73,7 +81,6 @@ async function getArtWorks(){
     localStorage.setItem("art", JSON.stringify(arrayOfData));
 
     return arrayOfData;
-
 
     function artInLS(){
         return localStorage.getItem("art")
