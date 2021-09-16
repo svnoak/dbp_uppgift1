@@ -1,8 +1,6 @@
 const atesterId = 666;
 const userId = 14;
 
-
-
 // Returns array of IDs for all artworks
 async function artIDsArray(){
     const url = "https://collectionapi.metmuseum.org/public/collection/v1/search?departmentId=11&q=snow";
@@ -32,9 +30,20 @@ async function render(parent,arrayOfImageObjects){
 }
 
 async function getUsers(){
-    const userFetches = [];
-    const url = "mpp.erikpineiro.se/dbp/sameTaste/users.php";
+    const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
+    const options = {
+        method: 'GET',
+        headers: {
+           "Content-type": "application/json; charset=UTF-8",
+        },
+     };
+    const rqst = new Request(url);
+    const responsePromise = await fetch(rqst, options);
+    const data = await responsePromise.json();
+    return data.message; //returns an array
 }
+
+getUsers();
 
 function createImages(images){
     const container = document.createElement("div");
