@@ -1,5 +1,7 @@
 const userId = 14;
 
+initialize();
+
 async function initialize(){
     const users = await getUsers();
     const sidebar = await createSidebar("nav", users);
@@ -33,15 +35,15 @@ async function createMain(element, users){
     const container = document.createElement(element);
     for( image of images) {
 
-        let exists = await favourites.exists(image.objectID, users);
-        let state = exists ? "removeFav" : "addFav";
+        let imageID = image.objectID;
+        let exists = await favourites.exists(imageID, users);
 
         let div = document.createElement("div");
         let button = document.createElement("button");
         button.innerText = exists ? "remove" : "add";
-        button.value = image.objectID;
+        button.value = exists;
         button.id = `b_${image.objectID}`;
-        button.addEventListener( "click", () => favourites.operation(state, button.value) );
+        button.addEventListener( "click", () => favourites.operation(button.value, imageID) );
 
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
@@ -62,21 +64,27 @@ const favourites = {
         let commonFavs = userFavs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
         return commonFavs.length;
     },
-    operation: async function(operation, imageID){ // operation = removeFav || addFav
+    operation: async function(exists, imageID){ // operation = removeFav || addFav
+        let operation = exists ? "removeFav" : "addFav";
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
         imageID = parseInt(imageID);
-        console.log(operation, imageID);
+        let object = {id: userId, [operation]: imageID};
+        console.log(object);
         await fetch( new Request(url),
             {
                 method: 'PATCH',
-                body: JSON.stringify({id: userId, [operation]: imageID}),
+                body: JSON.stringify(object),
                 headers: {
                 "Content-type": "application/json; charset=UTF-8",
                 }
             })
             .then(response => {
+                let btn = document.querySelector(`#b_${imageID}`);
+                if ( response.status == 200 ) {
+                    btn.value = btn.value ? false : true;
+                    btn.innerText = btn.value ? "add" : "remove";
+                }
                 if (response.status == 409 ) {                  
-                    let btn = document.querySelector(`#b_${imageID}`);
                     btn.innerText = "Too many favourites";
                     btn.disabled = true;
                     setTimeout(() => {
@@ -84,8 +92,9 @@ const favourites = {
                         btn.disabled = false;
                     }, 2000);
                 }
+                console.log(response);
             })
-            .then(console.log)
+            .catch( console.log )
     },
     exists: async function(imageID, users){
         const favs = users.find( user => user.id == userId).favs;
@@ -94,10 +103,6 @@ const favourites = {
     }
 
 }
-
-
-
-initialize();
 
 // Returns array of IDs for all artworks
 async function artIDsArray(){
