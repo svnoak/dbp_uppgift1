@@ -4,10 +4,10 @@
 ------------
 
 - [x] Updating DB... on remove/add
-- [ ] Updating Users... every 30 seconds
+- [x] Updating Users... every 30 seconds
 - [x] Updating favourites.compare() on remove/add
 - [ ] Clicking on users and rendering correct images (but without buttons)
-- [ ] Green borders on favourite images
+- [x] Green borders on favourite images
 
 */
 
@@ -40,9 +40,10 @@ async function createSidebar(element, users){
 
     container.append(overlay);
 
-    for( user of users) {
+    for( const [index, user] of users.entries()) {
         let element = document.createElement("div");
         element.innerText = await favourites.updateUserFavs(users, user, element);
+        if (index == 0) element.innerText = `${user.alias} [${user.favs.length}]`;
         element.id = `nav_${user.id}`;
         container.append(element);
     };
@@ -55,6 +56,8 @@ async function createMain(element, users){
     const container = document.createElement(element);
 
     for( image of images) {
+
+        let imageContainer = document.createElement("div");
 
         let imageID = image.objectID;
         let exists = await favourites.exists(imageID, users);
@@ -80,8 +83,13 @@ async function createMain(element, users){
         imageElement.src = image.primaryImageSmall;
         imageElement.id = image.objectID;
 
+        let description = document.createElement("span");
+        description.innerText = `${image.title} ${image.artistDisplayName}`;
+
         div.append(overlay, button, imageElement);
-        container.append(div);
+
+        imageContainer.append(div, description)
+        container.append(imageContainer);
     };
 
     return container;
@@ -135,7 +143,6 @@ const favourites = {
                         btn.disabled = false;
                     }, 2000);
                 }
-                console.log(response);
             })
             .catch( console.log );
     },

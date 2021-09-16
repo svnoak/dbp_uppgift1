@@ -3,7 +3,7 @@ html{
 }
 
 nav,
-main > div,
+main > div >,
 body > div{
     position: relative;
 }
@@ -20,12 +20,11 @@ nav{
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    position: relative;
-    overflow: scroll;
+    overflow-x: none;
 }
 
 main{
-    padding: 10px;
+    padding: 20px 0px;
     display: grid;
     grid-template-columns: repeat(4, 15vw);
     grid-gap: 10px;
@@ -55,14 +54,18 @@ main{
     align-items: center;
 }
 
-main > div{
+main > div > div{
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: white;
-    margin: 5px;
+    height: 25vh;
+}
+
+main > div {
+    color: white;
 }
 
 .fav{
