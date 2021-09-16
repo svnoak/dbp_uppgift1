@@ -1,9 +1,27 @@
+/*
+------------     
+    TODO
+------------
+
+- [ ] Updating DB... on remove/add
+- [ ] Updating Users... every 30 seconds
+- [ ] Updating favourites.compare() on remove/add
+- [ ] Clicking on users and rendering correct images (but without buttons)
+- [ ] Green borders on favourite images
+
+*/
+
+
 const userId = 14;
 
 initialize();
 
+function updateFeedback(){
+
+}
+
 async function initialize(){
-    const users = await getUsers();
+    let users = await getUsers();
     const sidebar = await createSidebar("nav", users);
     const main = await createMain("main", users);
     render(sidebar);
@@ -15,15 +33,14 @@ async function initialize(){
 }
 
 async function createSidebar(element, users){
-
     let container = document.createElement(element);
     users.sort( (a,b) => a.alias > b.alias );
     users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
 
     for( user of users) {
         let element = document.createElement("div");
-        let commonFavs = await favourites.compare(users, user.favs);
-        element.innerText = `${user.alias} [${user.favs.length}] (${commonFavs})`;
+        element.innerText = await favourites.updateUserFavs(users, user, element);
+        element.id = `nav_${user.id}`;
         container.append(element);
     };
 
@@ -39,11 +56,15 @@ async function createMain(element, users){
         let exists = await favourites.exists(imageID, users);
 
         let div = document.createElement("div");
+        if (exists) div.style.border = "10px green";
         let button = document.createElement("button");
         button.innerText = exists ? "remove" : "add";
-        button.value = exists;
+        button.value = await favourites.exists(imageID, users);
         button.id = `b_${image.objectID}`;
-        button.addEventListener( "click", () => favourites.operation(button.value, imageID) );
+        button.addEventListener( "click", () => {
+            favourites.operation(imageID, users)
+            favourites.updateUserFavs(users);
+        });
 
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
@@ -57,18 +78,22 @@ async function createMain(element, users){
 }
 
 const favourites = {
-    compare: async function (users, userFavs){
+    compare: async function (users, user){
+
         const mainUser = users.find( user => user.id == userId );
         const mainFavs = mainUser.favs;
-    
-        let commonFavs = userFavs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
+        let commonFavs = user.favs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
         return commonFavs.length;
     },
-    operation: async function(exists, imageID){ // operation = removeFav || addFav
-        let operation = exists ? "addFav" : "removeFav";
+    operation: async function(imageID){ // operation = removeFav || addFav
+        let users = await getUsers();
+        let exists = await favourites.exists(imageID, users);
+        let operation = exists ? "removeFav" : "addFav";
+        console.log(exists);
+        console.log(operation);
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
         imageID = parseInt(imageID);
-        let object = {id: userId, [operation]: imageID};
+        let object = {id: userId, [operation]: imageID };
         await fetch( new Request(url),
             {
                 method: 'PATCH',
@@ -80,10 +105,10 @@ const favourites = {
             .then(response => {
                 let btn = document.querySelector(`#b_${imageID}`);
                 if ( response.status == 200 ) {
-                    btn.value = btn.value ? false : true;
-                    btn.innerText = btn.value ? "add" : "remove";
+                    btn.value = exists ? false : true;
+                    btn.innerText = exists ? "add" : "remove";
                 }
-                if (response.status == 409 ) {                  
+                if (response.status == 409 ) {              
                     btn.innerText = "Too many favourites";
                     btn.disabled = true;
                     setTimeout(() => {
@@ -92,6 +117,7 @@ const favourites = {
                     }, 2000);
                 }
                 console.log(response);
+                document.body.style.backgroundColor = "white";
             })
             .catch( console.log )
     },
@@ -99,6 +125,19 @@ const favourites = {
         const favs = users.find( user => user.id == userId).favs;
         const exists = favs.some( fav => fav == imageID );
         return exists;
+    },
+    updateUserFavs: async function(users, user, element){
+        if ( !element ){
+            users = await getUsers();
+            for (user of users) {
+                let userElement = document.querySelector(`#nav_${user.id}`);
+                let commonFavs = await favourites.compare(users, user);
+                userElement.innerText = `${user.alias} [${user.favs.length}] (${commonFavs})`;
+            }
+        } else {
+            let commonFavs = await favourites.compare(users, user);
+            return `${user.alias} [${user.favs.length}] (${commonFavs})`;
+        }
     }
 
 }
