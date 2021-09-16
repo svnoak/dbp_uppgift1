@@ -19,7 +19,7 @@ async function createSidebar(element){
 
     for( user of users) {
         let element = document.createElement("div");
-        let commonFavs = await compareFavourites(users, user.favs);
+        let commonFavs = await favourites.compare(users, user.favs);
         element.innerText = `${user.alias} [${user.favs.length}] (${commonFavs})`;
         container.append(element);
     };
@@ -33,7 +33,7 @@ async function createMain(element){
     for( image of images) {
         let div = document.createElement("div");
         let button = document.createElement("button");
-        button.innerText = favExists() ? "remove" : "add";
+        button.innerText = favourites.exists() ? "remove" : "add";
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
         div.append(button, imageElement);
@@ -41,19 +41,40 @@ async function createMain(element){
     };
 
     return container;
+}
 
-    function favExists(){
+const favourites = {
+    compare: async function (users, userFavs){
+        const mainUser = users.find( user => user.id == userId );
+        const mainFavs = mainUser.favs;
+    
+        let commonFavs = userFavs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
+        return commonFavs.length;
+    },
+    add: async function(){
+        const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
+        const options = {
+            method: 'PATCH',
+            headers: {
+               "Content-type": "application/json; charset=UTF-8",
+            },
+         };
+        const rqst = new Request(url);
+        const responsePromise = await fetch(rqst, options);
+        const data = await responsePromise.json();
+        return data.message; //returns an array
+    },
+    remove: async function(){
+
+    },
+    exists: async function(){
+        // CHECK IF THE FAVOURITE IS ALREADY IN ARRAY
         return false;
     }
+
 }
 
-async function compareFavourites(users, userFavs){
-    const mainUser = users.find( user => user.id == userId );
-    const mainFavs = mainUser.favs;
 
-    let commonFavs = userFavs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
-    return commonFavs.length;
-}
 
 initialize();
 
