@@ -60,7 +60,8 @@ async function createMain(element, users){
         let exists = await favourites.exists(imageID, users);
 
         let div = document.createElement("div");
-        if (exists) div.style.border = "10px green";
+        div.id = `d_${imageID}`;
+        if (exists) div.classList.add("fav");
 
         let overlay = document.createElement("div");
         overlay.id = `overlay_${imageID}`;
@@ -95,9 +96,12 @@ const favourites = {
         return commonFavs.length;
     },
     operation: async function(imageID){ // operation = removeFav || addFav
+        let imageDiv = document.querySelector(`#d_${imageID}`);
         document.querySelector(`#overlay_${imageID}`).classList.remove("hidden");
         let users = await getUsers();
         let exists = await favourites.exists(imageID, users);
+        if (!exists) imageDiv.classList.add("fav");
+        if (exists) imageDiv.classList.remove("fav");
         let operation = exists ? "removeFav" : "addFav";
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
         imageID = parseInt(imageID);
