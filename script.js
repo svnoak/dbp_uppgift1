@@ -5,7 +5,7 @@
 
 - [ ] Updating DB... on remove/add
 - [ ] Updating Users... every 30 seconds
-- [ ] Updating favourites.compare() on remove/add
+- [x] Updating favourites.compare() on remove/add
 - [ ] Clicking on users and rendering correct images (but without buttons)
 - [ ] Green borders on favourite images
 
@@ -16,8 +16,11 @@ const userId = 14;
 
 initialize();
 
-function updateFeedback(){
-
+function updateOverlay(id, string){
+    let element = document.querySelector(`#${id}`);
+    if ( string ) element.classList.remove("hidden");
+    if ( string ) element.classList.add("hidden");
+    element.innerText = string;
 }
 
 async function initialize(){
@@ -37,6 +40,12 @@ async function createSidebar(element, users){
     users.sort( (a,b) => a.alias > b.alias );
     users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
 
+    let overlay = document.createElement("div");
+    overlay.id = "nav_overlay";
+    overlay.className = "hidden update_overlay";
+
+    container.append(overlay);
+
     for( user of users) {
         let element = document.createElement("div");
         element.innerText = await favourites.updateUserFavs(users, user, element);
@@ -50,6 +59,7 @@ async function createSidebar(element, users){
 async function createMain(element, users){
     const images = await getArtWorks();
     const container = document.createElement(element);
+
     for( image of images) {
 
         let imageID = image.objectID;
@@ -57,6 +67,12 @@ async function createMain(element, users){
 
         let div = document.createElement("div");
         if (exists) div.style.border = "10px green";
+
+        let overlay = document.createElement("div");
+        overlay.id = `overlay_${imageID}`;
+        overlay.className = "hidden update_overlay";
+        overlay.innerText = "Updating DB...";
+
         let button = document.createElement("button");
         button.innerText = exists ? "remove" : "add";
         button.value = await favourites.exists(imageID, users);
@@ -69,7 +85,7 @@ async function createMain(element, users){
         imageElement.src = image.primaryImageSmall;
         imageElement.id = image.objectID;
 
-        div.append(button, imageElement);
+        div.append(overlay, button, imageElement);
         container.append(div);
     };
 
@@ -85,6 +101,7 @@ const favourites = {
         return commonFavs.length;
     },
     operation: async function(imageID){ // operation = removeFav || addFav
+        document.querySelector(`#overlay_${imageID}`).classList.remove("hidden");
         let users = await getUsers();
         let exists = await favourites.exists(imageID, users);
         let operation = exists ? "removeFav" : "addFav";
@@ -102,8 +119,13 @@ const favourites = {
             .then(response => {
                 let btn = document.querySelector(`#b_${imageID}`);
                 if ( response.status == 200 ) {
-                    btn.value = exists ? false : true;
-                    btn.innerText = exists ? "add" : "remove";
+                    async function update(){ 
+                        await favourites.updateUserFavs(users)
+                        btn.value = exists ? false : true;
+                        btn.innerText = exists ? "add" : "remove";
+                        document.querySelector(`#overlay_${imageID}`).classList.add("hidden");
+                    }
+                    update();
                 }
                 if (response.status == 409 ) {              
                     btn.innerText = "Too many favourites";
@@ -113,11 +135,9 @@ const favourites = {
                         btn.disabled = false;
                     }, 2000);
                 }
-                this.updateUserFavs(users);
                 console.log(response);
-                document.body.style.backgroundColor = "white";
             })
-            .catch( console.log )
+            .catch( console.log );
     },
     exists: async function(imageID, users){
         const favs = users.find( user => user.id == userId).favs;
