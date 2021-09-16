@@ -32,16 +32,21 @@ async function createMain(element, users){
     const images = await getArtWorks();
     const container = document.createElement(element);
     for( image of images) {
-        let div = document.createElement("div");
-        let button = document.createElement("button");
+
         let exists = await favourites.exists(image.objectID, users);
         let state = exists ? "removeFav" : "addFav";
+
+        let div = document.createElement("div");
+        let button = document.createElement("button");
         button.innerText = exists ? "remove" : "add";
         button.value = image.objectID;
+        button.id = `b_${image.objectID}`;
         button.addEventListener( "click", () => favourites.operation(state, button.value) );
+
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
         imageElement.id = image.objectID;
+
         div.append(button, imageElement);
         container.append(div);
     };
@@ -69,9 +74,18 @@ const favourites = {
                 "Content-type": "application/json; charset=UTF-8",
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status == 409 ) {                  
+                    let btn = document.querySelector(`#b_${imageID}`);
+                    btn.innerText = "Too many favourites";
+                    btn.disabled = true;
+                    setTimeout(() => {
+                        btn.innerText = "add";
+                        btn.disabled = false;
+                    }, 2000);
+                }
+            })
             .then(console.log)
-            .catch(console.log)
     },
     exists: async function(imageID, users){
         const favs = users.find( user => user.id == userId).favs;
