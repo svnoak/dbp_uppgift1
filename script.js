@@ -41,7 +41,10 @@ function createImages(images){
     return container;
 }
 
-render("main",getArtWorks());
+function initialize(){
+    render("nav", getUsers());
+    render("main",getArtWorks());
+}
 
 
 function filterObjectKeys(object, keysToKeep){
