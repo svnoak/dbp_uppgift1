@@ -2,7 +2,9 @@ const userId = 14;
 
 async function initialize(){
     const sidebar = await createSidebar("nav");
+    const main = await createMain("main");
     render(sidebar);
+    render(main);
 
     function render(element){
         document.body.appendChild(element);
@@ -20,7 +22,19 @@ async function createSidebar(element){
         let commonFavs = await compareFavourites(users, user.favs);
         element.innerText = `${user.alias} [${user.favs.length}] (${commonFavs})`;
         container.append(element);
-    }
+    };
+
+    return container;
+}
+
+async function createMain(element){
+    const images = await getArtWorks();
+    const container = document.createElement(element);
+    for( image of images) {
+        let imageElement = document.createElement("img");
+        imageElement.src = image.primaryImageSmall;
+        container.append(imageElement);
+    };
 
     return container;
 }
@@ -73,17 +87,6 @@ async function getUsers(){
     const responsePromise = await fetch(rqst, options);
     const data = await responsePromise.json();
     return data.message; //returns an array
-}
-
-function createImages(images){
-    const container = document.createElement("div");
-    images.forEach( image => {
-        let imageElement = document.createElement("img");
-        imageElement.src = image.primaryImageSmall;
-        container.append(imageElement);
-    } );
-
-    return container;
 }
 
 function filterObjectKeys(object, keysToKeep){
