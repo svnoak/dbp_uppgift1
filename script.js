@@ -63,7 +63,6 @@ async function createMain(element, users){
         button.id = `b_${image.objectID}`;
         button.addEventListener( "click", () => {
             favourites.operation(imageID, users)
-            favourites.updateUserFavs(users);
         });
 
         let imageElement = document.createElement("img");
@@ -89,8 +88,6 @@ const favourites = {
         let users = await getUsers();
         let exists = await favourites.exists(imageID, users);
         let operation = exists ? "removeFav" : "addFav";
-        console.log(exists);
-        console.log(operation);
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
         imageID = parseInt(imageID);
         let object = {id: userId, [operation]: imageID };
@@ -116,6 +113,7 @@ const favourites = {
                         btn.disabled = false;
                     }, 2000);
                 }
+                this.updateUserFavs(users);
                 console.log(response);
                 document.body.style.backgroundColor = "white";
             })
