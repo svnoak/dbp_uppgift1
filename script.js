@@ -1,5 +1,30 @@
-const atesterId = 666;
 const userId = 14;
+
+async function initialize(){
+    const sidebar = await createSidebar("nav");
+    render(sidebar);
+
+    function render(element){
+        document.body.appendChild(element);
+    }
+}
+
+async function createSidebar(element){
+    const users = await getUsers();
+    let container = document.createElement(element);
+    users.sort( (a,b) => a.alias > b.alias );
+    users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
+
+    users.forEach( user => {
+        let element = document.createElement("div");
+        element.innerText = `${user.alias} [${user.favs.length}] (/compareFavourites(user.favs)})`;
+        container.append(element);
+    } )
+
+    return container;
+}
+
+initialize();
 
 // Returns array of IDs for all artworks
 async function artIDsArray(){
@@ -11,6 +36,9 @@ async function artIDsArray(){
 }
 
 async function getArtWorks(){
+
+    // CHECK LOCALSTORAGE
+
     const artFetches = [];
     const url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/";
     const artIDs = await artIDsArray();
@@ -22,11 +50,6 @@ async function getArtWorks(){
 
     return arrayOfData;
 
-}
-
-async function render(parent,arrayOfImageObjects){
-    const images = await arrayOfImageObjects;
-    document.querySelector(parent).append(createImages(images));
 }
 
 async function getUsers(){
@@ -43,8 +66,6 @@ async function getUsers(){
     return data.message; //returns an array
 }
 
-getUsers();
-
 function createImages(images){
     const container = document.createElement("div");
     images.forEach( image => {
@@ -55,12 +76,6 @@ function createImages(images){
 
     return container;
 }
-
-function initialize(){
-    render("nav", getUsers());
-    render("main",getArtWorks());
-}
-
 
 function filterObjectKeys(object, keysToKeep){
     let objectKeys = Object.keys(object);
