@@ -15,13 +15,22 @@ async function createSidebar(element){
     users.sort( (a,b) => a.alias > b.alias );
     users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
 
-    users.forEach( user => {
+    for( user of users) {
         let element = document.createElement("div");
-        element.innerText = `${user.alias} [${user.favs.length}] (/compareFavourites(user.favs)})`;
+        let commonFavs = await compareFavourites(users, user.favs);
+        element.innerText = `${user.alias} [${user.favs.length}] (${commonFavs})`;
         container.append(element);
-    } )
+    }
 
     return container;
+}
+
+async function compareFavourites(users, userFavs){
+    const mainUser = users.find( user => user.id == userId );
+    const mainFavs = mainUser.favs;
+
+    let commonFavs = userFavs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
+    return commonFavs.length;
 }
 
 initialize();
