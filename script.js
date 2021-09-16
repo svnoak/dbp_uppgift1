@@ -11,7 +11,7 @@ async function artIDsArray(){
     return data.objectIDs;
 }
 
-async function getArtWork(){
+async function getArtWorks(){
     const artFetches = [];
     const url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/";
     const artIDs = await artIDsArray();
@@ -20,18 +20,29 @@ async function getArtWork(){
     const responsePromises = await Promise.all(artFetches);
     const arrayOfJSON = responsePromises.map( response => response.json() );
     const arrayOfData = await Promise.all(arrayOfJSON);
-    const keysToKeep = [
-        "objectID", 
-        "primaryImageSmall",
-        "title",
-        "artistDisplayName"    
-    ]
 
-    const filteredArrayOfData = [];
-    arrayOfData.forEach( data => filteredArrayOfData.push(filterObjectKeys(data, keysToKeep)));
-    console.log(filteredArrayOfData);
+    return arrayOfData;
 
 }
+
+async function render(parent,arrayOfImageObjects){
+    const images = await arrayOfImageObjects;
+    document.querySelector(parent).append(createImages(images));
+}
+
+function createImages(images){
+    const container = document.createElement("div");
+    images.forEach( image => {
+        let imageElement = document.createElement("img");
+        imageElement.src = image.primaryImageSmall;
+        container.append(imageElement);
+    } );
+
+    return container;
+}
+
+render("main",getArtWorks());
+
 
 function filterObjectKeys(object, keysToKeep){
     let objectKeys = Object.keys(object);
@@ -40,4 +51,4 @@ function filterObjectKeys(object, keysToKeep){
     for ( key of filteredKeys ) delete clonedObject[key];
     return clonedObject;
 }
-getArtWork();
+
