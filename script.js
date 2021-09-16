@@ -3,7 +3,7 @@
     TODO
 ------------
 
-- [ ] Updating DB... on remove/add
+- [x] Updating DB... on remove/add
 - [ ] Updating Users... every 30 seconds
 - [x] Updating favourites.compare() on remove/add
 - [ ] Clicking on users and rendering correct images (but without buttons)
@@ -15,13 +15,6 @@
 const userId = 14;
 
 initialize();
-
-function updateOverlay(id, string){
-    let element = document.querySelector(`#${id}`);
-    if ( string ) element.classList.remove("hidden");
-    if ( string ) element.classList.add("hidden");
-    element.innerText = string;
-}
 
 async function initialize(){
     let users = await getUsers();
@@ -42,6 +35,7 @@ async function createSidebar(element, users){
 
     let overlay = document.createElement("div");
     overlay.id = "nav_overlay";
+    overlay.innerText = "Updating Users..."
     overlay.className = "hidden update_overlay";
 
     container.append(overlay);
@@ -127,9 +121,11 @@ const favourites = {
                     }
                     update();
                 }
-                if (response.status == 409 ) {              
+                if (response.status == 409 ) {    
+                    document.querySelector(`#overlay_${imageID}`).classList.add("hidden");          
                     btn.innerText = "Too many favourites";
                     btn.disabled = true;
+                    btn.style.color = "black";
                     setTimeout(() => {
                         btn.innerText = "add";
                         btn.disabled = false;
@@ -145,13 +141,16 @@ const favourites = {
         return exists;
     },
     updateUserFavs: async function(users, user, element){
+        let interval = users ? false : true;
         if ( !element ){
+            if (interval) document.querySelector("#nav_overlay").classList.remove("hidden");
             users = await getUsers();
             for (user of users) {
                 let userElement = document.querySelector(`#nav_${user.id}`);
                 let commonFavs = await favourites.compare(users, user);
                 userElement.innerText = `${user.alias} [${user.favs.length}] (${commonFavs})`;
             }
+            if(interval)document.querySelector("#nav_overlay").classList.add("hidden");
         } else {
             let commonFavs = await favourites.compare(users, user);
             return `${user.alias} [${user.favs.length}] (${commonFavs})`;
@@ -211,4 +210,6 @@ function filterObjectKeys(object, keysToKeep){
     for ( key of filteredKeys ) delete clonedObject[key];
     return clonedObject;
 }
+
+setInterval( () => favourites.updateUserFavs(), 30000 )
 

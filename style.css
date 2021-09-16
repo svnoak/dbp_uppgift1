@@ -1,3 +1,7 @@
+html{
+    box-sizing: border-box;
+}
+
 nav,
 main > div,
 body > div{
@@ -6,18 +10,31 @@ body > div{
 
 body{
     display: grid;
-    grid-template-columns: 30vw 70vw;
+    grid-template-columns: .7fr auto;
+    grid-gap: 1px;
+    padding: 1vw;
+    background-color: skyblue;
+}
+
+nav{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    position: relative;
+    overflow: scroll;
 }
 
 main{
-    margin-top: 5vh;
+    padding: 10px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 20px;
+    grid-template-columns: repeat(4, 15vw);
+    grid-gap: 10px;
+    background-color: black;
+    justify-content: center;
 }
 
 .hidden{
-    display: none;
+    display: none !important;
 }
 
 .update_overlay{
@@ -27,6 +44,15 @@ main{
     height: 100%;
     width: 100%;
     z-index: 100;
+    display: flex;
+    text-align: center;
+    align-items: center;
+}
+
+#nav_overlay{
+    display:flex;
+    justify-content: center;
+    align-items: center;
 }
 
 main > div{
@@ -35,15 +61,16 @@ main > div{
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: white;
+    margin: 5px;
 }
 
 button{
-    position: relative;
+    position: absolute;
     top: -10px;
 }
 
 img{
-    width: 20vw;
-    height: 100%;
-    padding: 10px;
+    width: 80%;
+    margin: 10px;
 }
