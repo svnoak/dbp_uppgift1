@@ -65,11 +65,10 @@ const favourites = {
         return commonFavs.length;
     },
     operation: async function(exists, imageID){ // operation = removeFav || addFav
-        let operation = exists ? "removeFav" : "addFav";
+        let operation = exists ? "addFav" : "removeFav";
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
         imageID = parseInt(imageID);
         let object = {id: userId, [operation]: imageID};
-        console.log(object);
         await fetch( new Request(url),
             {
                 method: 'PATCH',
