@@ -33,9 +33,13 @@ async function createMain(element){
     for( image of images) {
         let div = document.createElement("div");
         let button = document.createElement("button");
-        button.innerText = favourites.exists() ? "remove" : "add";
+        let exists = await favourites.exists();
+        let state = exists ? "removeFav" : "addFav";
+        button.innerText = exists ? "remove" : "add";
+        button.addEventListener( "click", favourites.operation.bind(state) );
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
+        imageElement.id = image.objectID;
         div.append(button, imageElement);
         container.append(div);
     };
@@ -51,21 +55,17 @@ const favourites = {
         let commonFavs = userFavs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
         return commonFavs.length;
     },
-    add: async function(){
+    operation: async function(operation, event){ // operation = removeFav || addFav
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
-        const options = {
-            method: 'PATCH',
-            headers: {
-               "Content-type": "application/json; charset=UTF-8",
-            },
-         };
-        const rqst = new Request(url);
-        const responsePromise = await fetch(rqst, options);
-        const data = await responsePromise.json();
-        return data.message; //returns an array
-    },
-    remove: async function(){
-
+        const imageID = parseInt(event.target.nextSibling.id);
+        await fetch( new Request(url),
+            {
+                method: 'PATCH',
+                body: JSON.stringify({id: userId, [operation]: imageID}),
+                headers: {
+                "Content-type": "application/json; charset=UTF-8",
+                }
+            })
     },
     exists: async function(){
         // CHECK IF THE FAVOURITE IS ALREADY IN ARRAY
