@@ -59,8 +59,7 @@ async function artIDsArray(){
 }
 
 async function getArtWorks(){
-
-    // CHECK LOCALSTORAGE
+    if ( artInLS() ) return JSON.parse(localStorage.getItem("art"));
 
     const artFetches = [];
     const url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/";
@@ -71,8 +70,14 @@ async function getArtWorks(){
     const arrayOfJSON = responsePromises.map( response => response.json() );
     const arrayOfData = await Promise.all(arrayOfJSON);
 
+    localStorage.setItem("art", JSON.stringify(arrayOfData));
+
     return arrayOfData;
 
+
+    function artInLS(){
+        return localStorage.getItem("art")
+    }
 }
 
 async function getUsers(){
