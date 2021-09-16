@@ -1,8 +1,9 @@
 const userId = 14;
 
 async function initialize(){
-    const sidebar = await createSidebar("nav");
-    const main = await createMain("main");
+    const users = await getUsers();
+    const sidebar = await createSidebar("nav", users);
+    const main = await createMain("main", users);
     render(sidebar);
     render(main);
 
@@ -11,8 +12,8 @@ async function initialize(){
     }
 }
 
-async function createSidebar(element){
-    const users = await getUsers();
+async function createSidebar(element, users){
+
     let container = document.createElement(element);
     users.sort( (a,b) => a.alias > b.alias );
     users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
@@ -27,16 +28,17 @@ async function createSidebar(element){
     return container;
 }
 
-async function createMain(element){
+async function createMain(element, users){
     const images = await getArtWorks();
     const container = document.createElement(element);
     for( image of images) {
         let div = document.createElement("div");
         let button = document.createElement("button");
-        let exists = await favourites.exists();
+        let exists = await favourites.exists(image.objectID, users);
         let state = exists ? "removeFav" : "addFav";
         button.innerText = exists ? "remove" : "add";
-        button.addEventListener( "click", favourites.operation.bind(state) );
+        button.value = image.objectID;
+        button.addEventListener( "click", () => favourites.operation(state, button.value) );
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
         imageElement.id = image.objectID;
@@ -55,9 +57,10 @@ const favourites = {
         let commonFavs = userFavs.filter( userFav => mainFavs.some( mainFav => mainFav == userFav ) );
         return commonFavs.length;
     },
-    operation: async function(operation, event){ // operation = removeFav || addFav
+    operation: async function(operation, imageID){ // operation = removeFav || addFav
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
-        const imageID = parseInt(event.target.nextSibling.id);
+        imageID = parseInt(imageID);
+        console.log(operation, imageID);
         await fetch( new Request(url),
             {
                 method: 'PATCH',
@@ -66,10 +69,14 @@ const favourites = {
                 "Content-type": "application/json; charset=UTF-8",
                 }
             })
+            .then(response => response.json())
+            .then(console.log)
+            .catch(console.log)
     },
-    exists: async function(){
-        // CHECK IF THE FAVOURITE IS ALREADY IN ARRAY
-        return false;
+    exists: async function(imageID, users){
+        const favs = users.find( user => user.id == userId).favs;
+        const exists = favs.some( fav => fav == imageID );
+        return exists;
     }
 
 }
