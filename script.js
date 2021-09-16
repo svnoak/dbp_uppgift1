@@ -20,6 +20,24 @@ async function getArtWork(){
     const responsePromises = await Promise.all(artFetches);
     const arrayOfJSON = responsePromises.map( response => response.json() );
     const arrayOfData = await Promise.all(arrayOfJSON);
+    const keysToKeep = [
+        "objectID", 
+        "primaryImageSmall",
+        "title",
+        "artistDisplayName"    
+    ]
+
+    const filteredArrayOfData = [];
+    arrayOfData.forEach( data => filteredArrayOfData.push(filterObjectKeys(data, keysToKeep)));
+    console.log(filteredArrayOfData);
+
 }
 
+function filterObjectKeys(object, keysToKeep){
+    let objectKeys = Object.keys(object);
+    const clonedObject = JSON.parse(JSON.stringify(object));
+    let filteredKeys = objectKeys.filter( objectKey => !keysToKeep.some( key => objectKey == key ) );
+    for ( key of filteredKeys ) delete clonedObject[key];
+    return clonedObject;
+}
 getArtWork();
