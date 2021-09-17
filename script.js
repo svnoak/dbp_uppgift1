@@ -240,9 +240,17 @@ async function getUsers(){
         },
      };
     const rqst = new Request(url);
-    const responsePromise = await fetch(rqst, options);
-    const data = await responsePromise.json();
-    return data.message; //returns an array
+    try{
+        const responsePromise = await fetch(rqst, options);
+        const data = await responsePromise.json();
+        return data.message; //returns an array
+    }
+    catch (e) {
+        alert(e);
+        //window.onerror = (msg) => {alert(msg)};
+    }
+
+
 }
 
 setInterval( () => favourites.updateUserFavs(), 30000 )
