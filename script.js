@@ -8,9 +8,9 @@
 - [x] Updating favourites.compare() on remove/add
 - [x] Green borders on favourite images
 - [x] Clicking on users and rendering correct images (but without buttons)
-- [ ] Only rendering favourites on other users
-- [ ] Red border if it's commonFav.
-- [ ] Navigation separate scrolling
+- [x] Only rendering favourites on other users
+- [x] Red border if it's commonFav.
+- [x] Navigation separate scrolling
 
 */
 
@@ -112,8 +112,8 @@ async function createImages(image, imageID, users, id){
     imageElement.src = image.primaryImageSmall;
     imageElement.id = image.objectID;
 
-    let description = document.createElement("span");
-    description.innerText = `${image.title} ${image.artistDisplayName}`;
+    let description = document.createElement("p");
+    description.innerText = `${image.title} by ${image.artistDisplayName}`;
 
     div.append(imageElement);
     imageContainer.append(div, description)
