@@ -1,49 +1,44 @@
-/*
-------------     
-    TODO
-------------
-
-- [x] Updating DB... on remove/add
-- [x] Updating Users... every 30 seconds
-- [x] Updating favourites.compare() on remove/add
-- [x] Green borders on favourite images
-- [x] Clicking on users and rendering correct images (but without buttons)
-- [x] Only rendering favourites on other users
-- [x] Red border if it's commonFav.
-- [x] Navigation separate scrolling
-
-*/
-
 const userId = 14;
 
 initialize();
 
 async function initialize(){
+    render("nav", createOverlay("nav", "Updating Users..."));
+    render("main", createOverlay("main", "Fetching images..."));
+    overlay(true, ["nav", "main"]);
     localStorage.setItem("users", JSON.stringify(await getUsers() ));
     let users = JSON.parse(localStorage.getItem("users"));
-    const sidebar = await createSidebar("nav", users);
-    const main = await createMain("main", users, userId);
-    render(sidebar);
-    render(main);
+    const sidebar = await createSidebar("div", users);
+    const main = await createMain("div", users, userId);
+    overlay(false, ["nav", "main"]);
+    render("nav", sidebar);
+    render("main", main);
 }
 
-function render(element){
-    document.body.appendChild(element);
+function overlay(state, overlays){
+        let operation = state ? "remove" : "add";
+        overlays.forEach( overlay => document.querySelector(`#${overlay}_overlay`).classList[operation]("hidden") );
 }
+
+function render(parent, child){
+    document.querySelector(parent).appendChild(child);
+}
+
+function createOverlay(id, string){
+    let overlay = document.createElement("div");
+    overlay.id = `${id}_overlay`;
+    overlay.innerText = string;
+    overlay.className = "hidden update_overlay";
+
+    return overlay;
+};
 
 async function createSidebar(element, users){
-    let nav = document.createElement(element);
-    let container = document.createElement("div");
+    //let nav = document.createElement(element);
+    let container = document.createElement(element);
     container.id = "nav_container";
     users.sort( (a,b) => a.alias > b.alias );
     users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
-
-    let overlay = document.createElement("div");
-    overlay.id = "nav_overlay";
-    overlay.innerText = "Updating Users..."
-    overlay.className = "hidden update_overlay";
-
-    nav.append(overlay);
 
     for( user of users) {
         let element = document.createElement("div");
@@ -58,15 +53,11 @@ async function createSidebar(element, users){
         });
         container.append(element);
     };
-
-    nav.append(container);
-
-    return nav;
+    return container;
 }
 
 async function createMain(element, users, id){
     const images = await getArtWorks();
-    const main = document.createElement(element);
     const container = document.createElement("div");
     container.id = "main_container";
 
@@ -84,9 +75,6 @@ async function createMain(element, users, id){
 
 async function createImages(image, imageID, users, id){
     let imageContainer = document.createElement("div");
-/* 
-    let imageID = image.objectID;
-    let exists = await favourites.exists(imageID, users, id); */
 
     let commonFav = await favourites.exists(imageID, users, userId);
 
@@ -124,17 +112,16 @@ async function createImages(image, imageID, users, id){
     container.append(imageContainer);
 }
     };
-    main.append(container);
 
-    return main;
+    return container;
 }
 
 const favourites = {
     renderUserFav: async function(id){
         let users = JSON.parse(localStorage.getItem("users"));
-        document.querySelector("main").remove();
-        const main = await createMain("main", users, id);
-        render(main);
+        document.querySelector("#main_container").remove();
+        const main = await createMain("div", users, id);
+        render("main", main);
     },
     compare: async function (users, user){
 
@@ -197,7 +184,7 @@ const favourites = {
     updateUserFavs: async function(users, user, element){
         let interval = users ? false : true;
         if ( !element ){
-            if (interval) document.querySelector("#nav_overlay").classList.remove("hidden");
+            if (interval) overlay(true, ["nav"]);
             localStorage.setItem("users", JSON.stringify(await getUsers()));
             users = JSON.parse(localStorage.getItem("users"));
             for (user of users) {
@@ -206,7 +193,7 @@ const favourites = {
                 let text = user.id == userId ? `${user.alias} [${user.favs.length}]` : `${user.alias} [${user.favs.length}] (${commonFavs})`;
                 userElement.innerText = text;
             }
-            if(interval)document.querySelector("#nav_overlay").classList.add("hidden");
+            if(interval) overlay(false, ["nav"]);
         } else {
             let commonFavs = await favourites.compare(users, user);
             return `${user.alias} [${user.favs.length}] (${commonFavs})`;
