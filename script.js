@@ -32,7 +32,9 @@ function render(element){
 }
 
 async function createSidebar(element, users){
-    let container = document.createElement(element);
+    let nav = document.createElement(element);
+    let container = document.createElement("div");
+    container.id = "nav_container";
     users.sort( (a,b) => a.alias > b.alias );
     users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
 
@@ -41,7 +43,7 @@ async function createSidebar(element, users){
     overlay.innerText = "Updating Users..."
     overlay.className = "hidden update_overlay";
 
-    container.append(overlay);
+    nav.append(overlay);
 
     for( user of users) {
         let element = document.createElement("div");
@@ -53,7 +55,9 @@ async function createSidebar(element, users){
         container.append(element);
     };
 
-    return container;
+    nav.append(container);
+
+    return nav;
 }
 
 async function createMain(element, users, id){

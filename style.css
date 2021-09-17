@@ -14,13 +14,26 @@ body{
     grid-gap: 1px;
     padding: 1vw;
     background-color: skyblue;
+    overflow: hidden;
 }
 
 nav{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    overflow-x: none;
+    position: relative;
+    height: 100vh;
+}
+
+#nav_container{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+}
+
+#nav_container > div {
+    height: 5%;
+    width: 100%;
+    background-color: white;
+    border: 1px solid black;
 }
 
 main{
@@ -61,11 +74,11 @@ main > div > div{
     justify-content: center;
     align-items: center;
     background-color: white;
-    height: 25vh;
 }
 
 main > div {
     color: white;
+    height: 25vh;
 }
 
 .fav{
