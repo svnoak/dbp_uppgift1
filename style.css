@@ -46,6 +46,23 @@ main{
     height: 5%;
     background-color: white;
     border: 1px solid black;
+    display: flex;
+    align-items: center;
+    padding-left: 5%;
+    cursor: pointer;
+}
+
+#nav_container > div:hover{
+    background-color: yellow;
+}
+
+#nav_container > div:first-child{
+    background-color: black;
+    color: white;
+}
+
+.selected{
+    background-color: green !important;
 }
 
 #main_container{

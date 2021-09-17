@@ -51,7 +51,11 @@ async function createSidebar(element, users){
         if (user.id == userId) element.innerText = `${user.alias} [${user.favs.length}]`;
         let userid = user.id;
         element.id = `nav_${user.id}`;
-        element.addEventListener("click", () => favourites.renderUserFav(userid));
+        element.addEventListener("click", function(){
+            if ( document.querySelector(".selected") ) document.querySelector(".selected").classList.remove("selected");
+            favourites.renderUserFav(userid)
+            this.classList.add("selected");        
+        });
         container.append(element);
     };
 
