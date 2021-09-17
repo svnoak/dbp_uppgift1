@@ -246,7 +246,7 @@ async function getUsers(){
         return data.message; //returns an array
     }
     catch (e) {
-        alert(`${e}\n This might be because of your browser blocking mixed content. \n To disable mixed content blocking on Firefox, check out this link \n https://support.mozilla.org/en-US/kb/mixed-content-blocking-firefox `);
+        alert(`${e} \n\n This might be because of your browser blocking mixed content. \n\n To disable mixed content blocking on Firefox, check out this link \n\n https://support.mozilla.org/en-US/kb/mixed-content-blocking-firefox `);
     }
 
 
