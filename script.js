@@ -172,7 +172,8 @@ const favourites = {
                     update();
                 }
                 if (response.status == 409 ) {    
-                    document.querySelector(`#overlay_${imageID}`).classList.add("hidden");          
+                    imageDiv.classList.remove("fav");
+                    document.querySelector(`#overlay_${imageID}`).classList.add("hidden");
                     btn.innerText = "Too many favourites";
                     btn.disabled = true;
                     btn.style.color = "black";
@@ -229,6 +230,9 @@ async function getArtWorks(){
     const responsePromises = await Promise.all(artFetches);
     const arrayOfJSON = responsePromises.map( response => response.json() );
     const arrayOfData = await Promise.all(arrayOfJSON);
+
+    const sortedArtWorks = arrayOfData.sort( (a,b) => a.artistDisplayName > b.artistDisplayName );
+    console.log(sortedArtWorks);
 
     localStorage.setItem("art", JSON.stringify(arrayOfData));
 
