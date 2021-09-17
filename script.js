@@ -6,8 +6,9 @@
 - [x] Updating DB... on remove/add
 - [x] Updating Users... every 30 seconds
 - [x] Updating favourites.compare() on remove/add
-- [ ] Clicking on users and rendering correct images (but without buttons)
 - [x] Green borders on favourite images
+- [ ] Clicking on users and rendering correct images (but without buttons)
+- [ ] Navigation separate scrolling
 
 */
 
@@ -19,13 +20,14 @@ initialize();
 async function initialize(){
     let users = await getUsers();
     const sidebar = await createSidebar("nav", users);
-    const main = await createMain("main", users);
+    const main = await createMain("main", users, userId);
     render(sidebar);
     render(main);
 
-    function render(element){
-        document.body.appendChild(element);
-    }
+}
+
+function render(element){
+    document.body.appendChild(element);
 }
 
 async function createSidebar(element, users){
@@ -40,18 +42,20 @@ async function createSidebar(element, users){
 
     container.append(overlay);
 
-    for( const [index, user] of users.entries()) {
+    for( user of users) {
         let element = document.createElement("div");
         element.innerText = await favourites.updateUserFavs(users, user, element);
-        if (index == 0) element.innerText = `${user.alias} [${user.favs.length}]`;
+        if (user.id == userId) element.innerText = `${user.alias} [${user.favs.length}]`;
+        let userid = user.id;
         element.id = `nav_${user.id}`;
+        element.addEventListener("click", () => favourites.renderUserFav(users, userid));
         container.append(element);
     };
 
     return container;
 }
 
-async function createMain(element, users){
+async function createMain(element, users, id){
     const images = await getArtWorks();
     const container = document.createElement(element);
 
@@ -60,7 +64,7 @@ async function createMain(element, users){
         let imageContainer = document.createElement("div");
 
         let imageID = image.objectID;
-        let exists = await favourites.exists(imageID, users);
+        let exists = await favourites.exists(imageID, users, id);
 
         let div = document.createElement("div");
         div.id = `d_${imageID}`;
@@ -71,13 +75,18 @@ async function createMain(element, users){
         overlay.className = "hidden update_overlay";
         overlay.innerText = "Updating DB...";
 
-        let button = document.createElement("button");
-        button.innerText = exists ? "remove" : "add";
-        button.value = await favourites.exists(imageID, users);
-        button.id = `b_${image.objectID}`;
-        button.addEventListener( "click", () => {
-            favourites.operation(imageID, users)
-        });
+        div.append(overlay);
+
+        if( id == userId ){
+            let button = document.createElement("button");
+            button.innerText = exists ? "remove" : "add";
+            button.value = await favourites.exists(imageID, users, id);
+            button.id = `b_${image.objectID}`;
+            button.addEventListener( "click", () => {
+                favourites.operation(imageID, users)
+            });
+            div.append(button);
+        }
 
         let imageElement = document.createElement("img");
         imageElement.src = image.primaryImageSmall;
@@ -86,7 +95,7 @@ async function createMain(element, users){
         let description = document.createElement("span");
         description.innerText = `${image.title} ${image.artistDisplayName}`;
 
-        div.append(overlay, button, imageElement);
+        div.append(imageElement);
 
         imageContainer.append(div, description)
         container.append(imageContainer);
@@ -96,6 +105,11 @@ async function createMain(element, users){
 }
 
 const favourites = {
+    renderUserFav: async function(users, id){
+        document.querySelector("main").remove();
+        const main = await createMain("main", users, id);
+        render(main);
+    },
     compare: async function (users, user){
 
         const mainUser = users.find( user => user.id == userId );
@@ -107,7 +121,7 @@ const favourites = {
         let imageDiv = document.querySelector(`#d_${imageID}`);
         document.querySelector(`#overlay_${imageID}`).classList.remove("hidden");
         let users = await getUsers();
-        let exists = await favourites.exists(imageID, users);
+        let exists = await favourites.exists(imageID, users, userId);
         if (!exists) imageDiv.classList.add("fav");
         if (exists) imageDiv.classList.remove("fav");
         let operation = exists ? "removeFav" : "addFav";
@@ -126,7 +140,7 @@ const favourites = {
                 let btn = document.querySelector(`#b_${imageID}`);
                 if ( response.status == 200 ) {
                     async function update(){ 
-                        await favourites.updateUserFavs(users)
+                        await favourites.updateUserFavs(users);
                         btn.value = exists ? false : true;
                         btn.innerText = exists ? "add" : "remove";
                         document.querySelector(`#overlay_${imageID}`).classList.add("hidden");
@@ -146,12 +160,13 @@ const favourites = {
             })
             .catch( console.log );
     },
-    exists: async function(imageID, users){
-        const favs = users.find( user => user.id == userId).favs;
+    exists: async function(imageID, users, id){
+        const favs = users.find( user => user.id == id).favs;
         const exists = favs.some( fav => fav == imageID );
         return exists;
     },
     updateUserFavs: async function(users, user, element){
+
         let interval = users ? false : true;
         if ( !element ){
             if (interval) document.querySelector("#nav_overlay").classList.remove("hidden");
@@ -159,7 +174,8 @@ const favourites = {
             for (user of users) {
                 let userElement = document.querySelector(`#nav_${user.id}`);
                 let commonFavs = await favourites.compare(users, user);
-                userElement.innerText = `${user.alias} [${user.favs.length}] (${commonFavs})`;
+                let text = user.id == userId ? `${user.alias} [${user.favs.length}]` : `${user.alias} [${user.favs.length}] (${commonFavs})`;
+                userElement.innerText = text;
             }
             if(interval)document.querySelector("#nav_overlay").classList.add("hidden");
         } else {
@@ -222,5 +238,5 @@ function filterObjectKeys(object, keysToKeep){
     return clonedObject;
 }
 
-setInterval( () => favourites.updateUserFavs(), 30000 )
+setInterval( () => favourites.updateUserFavs(), 5000 )
 
