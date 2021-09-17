@@ -48,7 +48,7 @@ async function createSidebar(element, users){
         if (user.id == userId) element.innerText = `${user.alias} [${user.favs.length}]`;
         let userid = user.id;
         element.id = `nav_${user.id}`;
-        element.addEventListener("click", () => favourites.renderUserFav(users, userid));
+        element.addEventListener("click", () => favourites.renderUserFav(userid));
         container.append(element);
     };
 
@@ -65,6 +65,7 @@ async function createMain(element, users, id){
 
         let imageID = image.objectID;
         let exists = await favourites.exists(imageID, users, id);
+        console.log(exists);
 
         let div = document.createElement("div");
         div.id = `d_${imageID}`;
@@ -105,7 +106,8 @@ async function createMain(element, users, id){
 }
 
 const favourites = {
-    renderUserFav: async function(users, id){
+    renderUserFav: async function(id){
+        let users = await getUsers();
         document.querySelector("main").remove();
         const main = await createMain("main", users, id);
         render(main);
@@ -122,9 +124,11 @@ const favourites = {
         document.querySelector(`#overlay_${imageID}`).classList.remove("hidden");
         let users = await getUsers();
         let exists = await favourites.exists(imageID, users, userId);
+        console.log(exists);
         if (!exists) imageDiv.classList.add("fav");
         if (exists) imageDiv.classList.remove("fav");
         let operation = exists ? "removeFav" : "addFav";
+        console.log(operation);
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
         imageID = parseInt(imageID);
         let object = {id: userId, [operation]: imageID };
