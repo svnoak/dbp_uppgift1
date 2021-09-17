@@ -25,7 +25,6 @@ async function initialize(){
     const main = await createMain("main", users, userId);
     render(sidebar);
     render(main);
-
 }
 
 function render(element){
@@ -62,45 +61,59 @@ async function createMain(element, users, id){
     const container = document.createElement(element);
 
     for( image of images) {
-
-        let imageContainer = document.createElement("div");
-
         let imageID = image.objectID;
         let exists = await favourites.exists(imageID, users, id);
-
-        let div = document.createElement("div");
-        div.id = `d_${imageID}`;
-        if (exists) div.classList.add("fav");
-
-        let overlay = document.createElement("div");
-        overlay.id = `overlay_${imageID}`;
-        overlay.className = "hidden update_overlay";
-        overlay.innerText = "Updating DB...";
-
-        div.append(overlay);
-
         if( id == userId ){
-            let button = document.createElement("button");
-            button.innerText = exists ? "remove" : "add";
-            button.value = await favourites.exists(imageID, users, id);
-            button.id = `b_${image.objectID}`;
-            button.addEventListener( "click", () => {
-                favourites.operation(imageID, users)
-            });
-            div.append(button);
+            createImages(image, imageID, users, id);
+        } else {
+
+            if( exists ){
+                createImages(image, imageID, users, id);
+            }
         }
 
-        let imageElement = document.createElement("img");
-        imageElement.src = image.primaryImageSmall;
-        imageElement.id = image.objectID;
+async function createImages(image, imageID, users, id){
+    let imageContainer = document.createElement("div");
+/* 
+    let imageID = image.objectID;
+    let exists = await favourites.exists(imageID, users, id); */
 
-        let description = document.createElement("span");
-        description.innerText = `${image.title} ${image.artistDisplayName}`;
+    let commonFav = await favourites.exists(imageID, users, userId);
 
-        div.append(imageElement);
+    let div = document.createElement("div");
+    div.id = `d_${imageID}`;
+    if (exists) div.classList.add("fav");
+    if (commonFav && id != userId) div.style.borderColor = "red";
 
-        imageContainer.append(div, description)
-        container.append(imageContainer);
+    let overlay = document.createElement("div");
+    overlay.id = `overlay_${imageID}`;
+    overlay.className = "hidden update_overlay";
+    overlay.innerText = "Updating DB...";
+
+    div.append(overlay);
+    if ( id == userId ){
+        let button = document.createElement("button");
+        button.innerText = exists ? "remove" : "add";
+        button.value = await favourites.exists(imageID, users, id);
+        button.id = `b_${image.objectID}`;
+        button.addEventListener( "click", () => {
+            favourites.operation(imageID, users)
+        });
+        div.append(button);
+    }
+
+    let imageElement = document.createElement("img");
+    imageElement.src = image.primaryImageSmall;
+    imageElement.id = image.objectID;
+
+    let description = document.createElement("span");
+    description.innerText = `${image.title} ${image.artistDisplayName}`;
+
+    div.append(imageElement);
+    imageContainer.append(div, description)
+    container.append(imageContainer);
+}
+
     };
 
     return container;
