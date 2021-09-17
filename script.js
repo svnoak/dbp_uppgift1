@@ -246,8 +246,11 @@ async function getUsers(){
         return data.message; //returns an array
     }
     catch (e) {
-        alert(e);
-        //window.onerror = (msg) => {alert(msg)};
+        alert(`${e}\n
+        This might be because of your browser blocking mixed content. \n
+        To disable mixed content blocking on Firefox, check out this link \n
+        https://support.mozilla.org/en-US/kb/mixed-content-blocking-firefox
+        `);
     }
 
 
