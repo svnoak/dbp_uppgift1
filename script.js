@@ -19,7 +19,8 @@ const userId = 14;
 initialize();
 
 async function initialize(){
-    let users = await getUsers();
+    localStorage.setItem("users", JSON.stringify(await getUsers() ));
+    let users = JSON.parse(localStorage.getItem("users"));
     const sidebar = await createSidebar("nav", users);
     const main = await createMain("main", users, userId);
     render(sidebar);
@@ -66,7 +67,6 @@ async function createMain(element, users, id){
 
         let imageID = image.objectID;
         let exists = await favourites.exists(imageID, users, id);
-        console.log(exists);
 
         let div = document.createElement("div");
         div.id = `d_${imageID}`;
@@ -108,7 +108,7 @@ async function createMain(element, users, id){
 
 const favourites = {
     renderUserFav: async function(id){
-        let users = await getUsers();
+        let users = JSON.parse(localStorage.getItem("users"));
         document.querySelector("main").remove();
         const main = await createMain("main", users, id);
         render(main);
@@ -171,11 +171,11 @@ const favourites = {
         return exists;
     },
     updateUserFavs: async function(users, user, element){
-
         let interval = users ? false : true;
         if ( !element ){
             if (interval) document.querySelector("#nav_overlay").classList.remove("hidden");
-            users = await getUsers();
+            localStorage.setItem("users", JSON.stringify(await getUsers()));
+            users = JSON.parse(localStorage.getItem("users"));
             for (user of users) {
                 let userElement = document.querySelector(`#nav_${user.id}`);
                 let commonFavs = await favourites.compare(users, user);
@@ -202,7 +202,6 @@ async function artIDsArray(){
 
 async function getArtWorks(){
     if ( artInLS() ) return JSON.parse(localStorage.getItem("art"));
-
     const artFetches = [];
     const url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/";
     const artIDs = await artIDsArray();
@@ -235,5 +234,5 @@ async function getUsers(){
     return data.message; //returns an array
 }
 
-setInterval( () => favourites.updateUserFavs(), 5000 )
+setInterval( () => favourites.updateUserFavs(), 30000 )
 
