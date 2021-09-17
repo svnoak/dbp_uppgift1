@@ -240,9 +240,16 @@ async function getUsers(){
         },
      };
     const rqst = new Request(url);
-    const responsePromise = await fetch(rqst, options);
-    const data = await responsePromise.json();
-    return data.message; //returns an array
+    try{
+        const responsePromise = await fetch(rqst, options);
+        const data = await responsePromise.json();
+        return data.message; //returns an array
+    }
+    catch (e) {
+        alert(`${e} \n\n This might be because of your browser blocking mixed content. \n\n To disable mixed content blocking on Firefox, check out this link \n\n https://support.mozilla.org/en-US/kb/mixed-content-blocking-firefox `);
+    }
+
+
 }
 
 setInterval( () => favourites.updateUserFavs(), 30000 )
