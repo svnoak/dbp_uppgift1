@@ -135,11 +135,9 @@ const favourites = {
         document.querySelector(`#overlay_${imageID}`).classList.remove("hidden");
         let users = await getUsers();
         let exists = await favourites.exists(imageID, users, userId);
-        console.log(exists);
         if (!exists) imageDiv.classList.add("fav");
         if (exists) imageDiv.classList.remove("fav");
         let operation = exists ? "removeFav" : "addFav";
-        console.log(operation);
         const url = "http://mpp.erikpineiro.se/dbp/sameTaste/users.php";
         imageID = parseInt(imageID);
         let object = {id: userId, [operation]: imageID };
@@ -223,11 +221,10 @@ async function getArtWorks(){
     const arrayOfData = await Promise.all(arrayOfJSON);
 
     const sortedArtWorks = arrayOfData.sort( (a,b) => a.artistDisplayName > b.artistDisplayName );
-    console.log(sortedArtWorks);
 
     localStorage.setItem("art", JSON.stringify(arrayOfData));
 
-    return arrayOfData;
+    return sortedArtWorks;
 
     function artInLS(){
         return localStorage.getItem("art")
