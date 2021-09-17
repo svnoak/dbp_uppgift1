@@ -9,9 +9,9 @@ body > div{
 }
 
 body{
-    display: grid;
-    grid-template-columns: .7fr auto;
-    grid-gap: 1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 1vw;
     background-color: skyblue;
     overflow: hidden;
@@ -20,23 +20,31 @@ body{
 nav{
     position: relative;
     height: 100vh;
+    width: 20vw;
 }
 
-#nav_container{
+main{
+    width: 100vw;
+    height: 100vh;
+}
+
+#nav_container,
+#main_container{
     position: absolute;
     height: 100%;
     width: 100%;
     overflow: auto;
 }
 
-#nav_container > div {
+#nav_container > div{
     height: 5%;
     width: 100%;
     background-color: white;
     border: 1px solid black;
 }
 
-main{
+#main_container{
+    width: 90vw;
     padding: 20px 0px;
     display: grid;
     grid-template-columns: repeat(4, 15vw);
@@ -67,7 +75,7 @@ main{
     align-items: center;
 }
 
-main > div > div{
+main > div > div > div{
     position: relative;
     display: flex;
     flex-direction: column;

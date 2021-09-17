@@ -62,7 +62,9 @@ async function createSidebar(element, users){
 
 async function createMain(element, users, id){
     const images = await getArtWorks();
-    const container = document.createElement(element);
+    const main = document.createElement(element);
+    const container = document.createElement("div");
+    container.id = "main_container";
 
     for( image of images) {
         let imageID = image.objectID;
@@ -117,10 +119,10 @@ async function createImages(image, imageID, users, id){
     imageContainer.append(div, description)
     container.append(imageContainer);
 }
-
     };
+    main.append(container);
 
-    return container;
+    return main;
 }
 
 const favourites = {
