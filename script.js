@@ -7,11 +7,12 @@
 - [x] Updating Users... every 30 seconds
 - [x] Updating favourites.compare() on remove/add
 - [x] Green borders on favourite images
-- [ ] Clicking on users and rendering correct images (but without buttons)
+- [x] Clicking on users and rendering correct images (but without buttons)
+- [ ] Only rendering favourites on other users
+- [ ] Red border if it's commonFav.
 - [ ] Navigation separate scrolling
 
 */
-
 
 const userId = 14;
 
@@ -232,14 +233,6 @@ async function getUsers(){
     const responsePromise = await fetch(rqst, options);
     const data = await responsePromise.json();
     return data.message; //returns an array
-}
-
-function filterObjectKeys(object, keysToKeep){
-    let objectKeys = Object.keys(object);
-    const clonedObject = JSON.parse(JSON.stringify(object));
-    let filteredKeys = objectKeys.filter( objectKey => !keysToKeep.some( key => objectKey == key ) );
-    for ( key of filteredKeys ) delete clonedObject[key];
-    return clonedObject;
 }
 
 setInterval( () => favourites.updateUserFavs(), 5000 )
