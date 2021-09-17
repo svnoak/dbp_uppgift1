@@ -246,8 +246,7 @@ async function getUsers(){
         return data.message; //returns an array
     }
     catch (e) {
-        alert(e);
-        //window.onerror = (msg) => {alert(msg)};
+        window.onerror = (msg) => {alert(msg)};
     }
 
 
