@@ -3,15 +3,15 @@ const userId = 14;
 initialize();
 
 async function initialize(){
-    render("nav", createOverlay("nav", "Updating Users..."));
+    render("aside", createOverlay("aside", "Updating Users..."));
     render("main", createOverlay("main", "Fetching images..."));
-    overlay(true, ["nav", "main"]);
+    overlay(true, ["aside", "main"]);
     localStorage.setItem("users", JSON.stringify(await getUsers() ));
     let users = JSON.parse(localStorage.getItem("users"));
-    const sidebar = await createSidebar("div", users);
+    const sidebar = await createSidebar("ul", users);
     const main = await createMain("div", users, userId);
-    overlay(false, ["nav", "main"]);
-    render("nav", sidebar);
+    overlay(false, ["aside", "main"]);
+    render("aside", sidebar);
     render("main", main);
 }
 
@@ -34,24 +34,28 @@ function createOverlay(id, string){
 };
 
 async function createSidebar(element, users){
-    //let nav = document.createElement(element);
+    //let aside = document.createElement(element);
     let container = document.createElement(element);
-    container.id = "nav_container";
+    container.id = "aside_container";
+    container.className = "menu-list";
     users.sort( (a,b) => a.alias > b.alias );
     users.sort( (a,b) => a.id == userId ? -1 : b.id == userId ? 1 : 0);
 
     for( user of users) {
-        let element = document.createElement("div");
+        let listItem = document.createElement("li");
+        let element = document.createElement("a");
         element.innerText = await favourites.updateUserFavs(users, user, element);
         if (user.id == userId) element.innerText = `${user.alias} [${user.favs.length}]`;
         let userid = user.id;
-        element.id = `nav_${user.id}`;
+        element.id = `aside_${user.id}`;
+        if ( user.id == userId ) element.className = "is-active";
         element.addEventListener("click", function(){
-            if ( document.querySelector(".selected") ) document.querySelector(".selected").classList.remove("selected");
-            favourites.renderUserFav(userid)
-            this.classList.add("selected");        
+            if ( document.querySelector(".is-active") ) document.querySelector(".is-active").classList.remove("is-active");
+            favourites.renderUserFav(userid);
+            this.classList.add("is-active");
         });
-        container.append(element);
+        listItem.append(element);
+        container.append(listItem);
     };
     return container;
 }
@@ -60,6 +64,7 @@ async function createMain(element, users, id){
     const images = await getArtWorks();
     const container = document.createElement("div");
     container.id = "main_container";
+    container.class = "box";
 
     for( image of images) {
         let imageID = image.objectID;
@@ -67,7 +72,6 @@ async function createMain(element, users, id){
         if( id == userId ){
             createImages(image, imageID, users, id);
         } else {
-
             if( exists ){
                 createImages(image, imageID, users, id);
             }
@@ -75,25 +79,26 @@ async function createMain(element, users, id){
 
 async function createImages(image, imageID, users, id){
     let imageContainer = document.createElement("div");
-
+    imageContainer.className = "box";
+    imageContainer.id = `d_${imageID}`;
     let commonFav = await favourites.exists(imageID, users, userId);
 
     let div = document.createElement("div");
-    div.id = `d_${imageID}`;
-    if (exists) div.classList.add("fav");
-    if (commonFav && id != userId) div.style.borderColor = "red";
+    if (exists) imageContainer.classList.add("fav");
+    if (commonFav && id != userId) imageContainer.style.backgroundColor = "rgba(251, 0, 0, 0.2)";
 
     let overlay = document.createElement("div");
     overlay.id = `overlay_${imageID}`;
     overlay.className = "hidden update_overlay";
     overlay.innerText = "Updating DB...";
 
-    div.append(overlay);
+    imageContainer.append(overlay);
     if ( id == userId ){
         let button = document.createElement("button");
         button.innerText = exists ? "remove" : "add";
         button.value = await favourites.exists(imageID, users, id);
         button.id = `b_${image.objectID}`;
+        button.className = "button";
         button.addEventListener( "click", () => {
             favourites.operation(imageID, users)
         });
@@ -182,16 +187,16 @@ const favourites = {
     updateUserFavs: async function(users, user, element){
         let interval = users ? false : true;
         if ( !element ){
-            if (interval) overlay(true, ["nav"]);
+            if (interval) overlay(true, ["aside"]);
             localStorage.setItem("users", JSON.stringify(await getUsers()));
             users = JSON.parse(localStorage.getItem("users"));
             for (user of users) {
-                let userElement = document.querySelector(`#nav_${user.id}`);
+                let userElement = document.querySelector(`#aside_${user.id}`);
                 let commonFavs = await favourites.compare(users, user);
                 let text = user.id == userId ? `${user.alias} [${user.favs.length}]` : `${user.alias} [${user.favs.length}] (${commonFavs})`;
                 userElement.innerText = text;
             }
-            if(interval) overlay(false, ["nav"]);
+            if(interval) overlay(false, ["aside"]);
         } else {
             let commonFavs = await favourites.compare(users, user);
             return `${user.alias} [${user.favs.length}] (${commonFavs})`;
@@ -248,9 +253,6 @@ async function getUsers(){
     catch (e) {
         alert(`${e} \n\n This might be because of your browser blocking mixed content. \n\n To disable mixed content blocking on Firefox, check out this link \n\n https://support.mozilla.org/en-US/kb/mixed-content-blocking-firefox `);
     }
-
-
 }
 
 setInterval( () => favourites.updateUserFavs(), 30000 )
-
