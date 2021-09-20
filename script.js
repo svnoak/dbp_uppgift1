@@ -225,7 +225,10 @@ async function getArtWorks(){
     const arrayOfJSON = responsePromises.map( response => response.json() );
     const arrayOfData = await Promise.all(arrayOfJSON);
 
+    keysToKeep = ["objectID", "primaryImageSmall", "title", "artistDisplayName"]
+
     const sortedArtWorks = arrayOfData.sort( (a,b) => a.artistDisplayName > b.artistDisplayName );
+    sortedArtWorks.forEach( item => Object.keys(item).forEach( key => keysToKeep.includes(key) ? 0 : delete item[key]) );
 
     localStorage.setItem("art", JSON.stringify(arrayOfData));
 
