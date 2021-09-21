@@ -177,7 +177,6 @@ const favourites = {
                     }, 2000);
                 }
             })
-            .catch( console.log );
     },
     exists: async function(imageID, users, id){
         const favs = users.find( user => user.id == id).favs;
