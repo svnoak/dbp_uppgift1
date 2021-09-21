@@ -190,6 +190,8 @@ const favourites = {
             if (interval) overlay(true, ["aside"]);
             localStorage.setItem("users", JSON.stringify(await getUsers()));
             users = JSON.parse(localStorage.getItem("users"));
+            let id = user.split("_")[1];
+            this.renderUserFav(id);
             for (user of users) {
                 let userElement = document.querySelector(`#aside_${user.id}`);
                 let commonFavs = await favourites.compare(users, user);
@@ -258,4 +260,7 @@ async function getUsers(){
     }
 }
 
-setInterval( () => favourites.updateUserFavs(), 30000 )
+setInterval( () => favourites.updateUserFavs(
+    "",
+    document.querySelector(".is-active").id
+), 30000 )
